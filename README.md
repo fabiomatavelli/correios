@@ -12,9 +12,15 @@ API para consumo de serviços do Correios.
 
 >>> from correios.correios import Correios
 >>> Correios.Rastreia(Objetos=["DG952125456BR","DG952125460BR"])
-{u'end': u'Avenida Paulista', u'bairro': u'Bela Vista', u'cidade': u'São Paulo',
-u'complemento2': u'- de 2134 ao fim - lado par', u'cep': u'01310300', u'comp
-lemento': None, u'uf': u'SP'}
+{u'DG952125460BR': [{u'status': u'01', u'uf': u'SP', u'tipo': u'BDE', 'data': da
+tetime.datetime(2015, 2, 24, 17, 3), u'cidade': u'Jundiai', u'sto': u'74654209',
+ u'recebedor': u'', u'codigo': u'13211970', u'local': u'CEE JUNDIAI', u'comentar
+io': u'', u'descricao': u'Objeto entregue ao destinatário', u'documento': u''
+}], u'DG952125456BR': [{u'status': u'01', u'uf': u'RS', u'tipo': u'BDE', 'data':
+ datetime.datetime(2015, 2, 21, 10, 28), u'cidade': u'Porto Alegre', u'sto': u'0
+0044846', u'recebedor': u'', u'codigo': u'91910972', u'local': u'CEE PORTO ALEGR
+E SUL', u'comentario': u'', u'descricao': u'Objeto entregue ao destinatário',
+ u'documento': u''}]}
 
 >>> Correios.Rastreia(Objetos=["DG952125456BR","DG952125460BR"],Resultado="T")
 {u'DG952125460BR': [{u'status': u'01', u'uf': u'SP', u'tipo': u'OEC', 'data': da
