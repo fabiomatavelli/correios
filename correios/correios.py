@@ -3,6 +3,7 @@
 
 import requests
 import datetime
+import re
 from xml.dom import minidom
 
 __author__ = "Fábio Matavelli"
@@ -17,7 +18,8 @@ class Correios:
 		
 		r = requests.post("http://websro.correios.com.br/sro_bin/sroii_xml.eventos",params={"Usuario":"ECT","Senha":"SRO","Tipo":Tipo,"Resultado":Resultado,"Objetos":Objetos})
 		if r.status_code == 200:
-			xml = minidom.parseString(r.text.encode("iso-8859-1"))
+			r.encoding = "iso-8859-1"
+			xml = minidom.parseString(r.text)
 			if len(xml.getElementsByTagName("error")) > 0:
 				errorMsg = xml.getElementsByTagName("error")[0].firstChild.nodeValue
 				raise CorreiosError(errorMsg)
@@ -52,6 +54,33 @@ class Correios:
 		else:
 			raise CorreiosError(u"Não foi possível rastrear o(s) objeto(s) %s" % (Objetos,))
 
+	@classmethod
+	def ConsultaCEP(cls,Cep):
+		xmlRequest = "<?xml version='1.0' encoding='UTF-8'?>\
+			<S:Envelope xmlns:S=\"http://schemas.xmlsoap.org/soap/envelope/\"><S:Body>\
+			<ns2:consultaCEP xmlns:ns2=\"http://cliente.bean.master.sigep.bsb.correios.com.br/\">\
+			<cep>%s</cep></ns2:consultaCEP></S:Body></S:Envelope>"
+	
+		r = requests.post("http://sigep.correios.com.br/SigepCliente/AtendeClienteService?wsdl",
+			data=xmlRequest % ("".join(re.findall('\d+', Cep)),),
+			headers={'content-type': 'text/xml; charset=utf-8'})
+		
+		if r.status_code == 200:
+			xmlResponse = minidom.parseString(r.text.encode("utf-8"))
+			if len(xmlResponse.getElementsByTagName("return")) > 0:
+				CepRetorno = {}
+				for campo in xmlResponse.getElementsByTagName("return")[0].childNodes:
+					if campo.nodeName.strip() in ("id",):
+						continue
+						
+					CepRetorno[campo.nodeName.strip()] = campo.firstChild.nodeValue if campo.firstChild is not None else None
+					
+				return CepRetorno
+			else:
+				raise CorreiosError(u"CEP %s não encontrado." % Cep)
+		else:
+			raise CorreiosError(u"Não foi possível consultar o CEP %s" % Cep)
+			
 class CorreiosError(Exception):
 	def __init__(self, error):
 		self.error = error
