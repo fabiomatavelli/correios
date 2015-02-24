@@ -13,13 +13,25 @@ __license__ = "GPL"
 class Correios:
 	@classmethod
 	def Rastreia(cls,Objetos,Tipo="L",Resultado="U"):
+		"""Rastreia um ou vários pacotes nos Correios
+		
+		Args:
+			Objetos: Pode ser uma string ou uma lista contendo vários objetos, ou o objeto inicial e o final caso Tipo=F
+			Tipo: Pode ser L (Padrão - Lista de Objetos) ou F (Faixa de Objetos. Ex.: Objetos=["DG000000001BR","DG000000999BR"]
+			Resultado: Pode ser U (Padrão - Última movimentação) ou T (Todas as movimentações)
+		Returns:
+			Um dicionário contendo o(s) pacote(s) consultado(s) e suas movimentações
+		Raise:
+			CorreiosError: Caso só um código seja consultado, e este não exista, será retornado erro de consulta.
+		"""
 		if isinstance(Objetos,list):
 			Objetos = "".join(Objetos)
 		
 		r = requests.post("http://websro.correios.com.br/sro_bin/sroii_xml.eventos",params={"Usuario":"ECT","Senha":"SRO","Tipo":Tipo,"Resultado":Resultado,"Objetos":Objetos})
+		
+		# Trabalha somente com o resultado de consultas com status 200
 		if r.status_code == 200:
-			r.encoding = "iso-8859-1"
-			xml = minidom.parseString(r.text)
+			xml = minidom.parseString(r.text.encode("iso-8859-1"))
 			if len(xml.getElementsByTagName("error")) > 0:
 				errorMsg = xml.getElementsByTagName("error")[0].firstChild.nodeValue
 				raise CorreiosError(errorMsg)
