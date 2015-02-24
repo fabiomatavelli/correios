@@ -12,6 +12,10 @@ __license__ = "GPL"
 
 class Correios:
 	@classmethod
+	def FormataCEP(cls,Cep):
+		return "".join(re.findall('\d+', Cep))
+
+	@classmethod
 	def Rastreia(cls,Objetos,Tipo="L",Resultado="U"):
 		"""Rastreia um ou vários pacotes nos Correios
 		
@@ -74,7 +78,7 @@ class Correios:
 			<cep>%s</cep></ns2:consultaCEP></S:Body></S:Envelope>"
 	
 		r = requests.post("http://sigep.correios.com.br/SigepCliente/AtendeClienteService?wsdl",
-			data=xmlRequest % ("".join(re.findall('\d+', Cep)),),
+			data=xmlRequest % (cls.FormataCEP(Cep=Cep),),
 			headers={'content-type': 'text/xml; charset=utf-8'})
 		
 		if r.status_code == 200:
@@ -92,7 +96,7 @@ class Correios:
 				raise CorreiosError(u"CEP %s não encontrado." % Cep)
 		else:
 			raise CorreiosError(u"Não foi possível consultar o CEP %s" % Cep)
-			
+	
 class CorreiosError(Exception):
 	def __init__(self, error):
 		self.error = error
